@@ -13,6 +13,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
     "dotenv": "^17.3.1",
+    "openai": "^6.32.0",
+    "pdfkit": "^0.18.0",
     "telegraf": "^4.16.3"
   }
 }
