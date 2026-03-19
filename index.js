@@ -412,7 +412,42 @@ app.post('/webhook/billplz', async (req, res) => {
      const [userId, plan] = (reference_1 || '').split('_');
      if (userId && plan) {
        await dbManager.saveUser(userId, { tier: plan, plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() });
-       try { await bot.telegram.sendMessage(userId, `🎉 Terima kasih! Pembayaran anda berjaya.\n\nAkaun anda telah dinaik taraf ke pelan *${plan.toUpperCase()}* sah selama 30 hari.\n\n/laporan untuk lihat P&L anda!`, { parse_mode: 'Markdown' }); } catch(e) { console.error(e); }
+       
+       // Generate PDF Receipt
+       const doc = new PDFDocument();
+       const receiptPath = path.join(__dirname, `Resit_BizBook_${userId}.pdf`);
+       const stream = fs.createWriteStream(receiptPath);
+       doc.pipe(stream);
+       
+       const amountStr = plan === 'basic' ? 'RM 60.00' : 'RM 119.00';
+       const planDesc = plan === 'basic' ? 'Basic (RM45 Setup + RM15/mo)' : 'Pro (RM99 Setup + RM20/mo)';
+       
+       doc.fontSize(20).font('Helvetica-Bold').text('BIZBOOK - RESIT PEMBAYARAN', { align: 'center' });
+       doc.moveDown();
+       doc.fontSize(12).font('Helvetica').text(`Tarikh: ${new Date().toLocaleDateString('ms-MY')}`);
+       doc.text(`ID Pelanggan (Telegram ID): ${userId}`);
+       doc.text(`Pelan Langganan: BizBook ${plan.toUpperCase()}`);
+       doc.text(`Butiran: ${planDesc}`);
+       doc.moveDown();
+       doc.fontSize(14).font('Helvetica-Bold').text(`Jumlah Dibayar: ${amountStr}`);
+       doc.moveDown(2);
+       doc.fontSize(10).font('Helvetica').text('Terima kasih kerana memilih BizBook. Ini adalah resit janaan komputer dan tiada tandatangan diperlukan.', { align: 'center' });
+       
+       doc.end();
+
+       stream.on('finish', async () => {
+         try { 
+           await bot.telegram.sendMessage(userId, `🎉 Terima kasih! Pembayaran anda berjaya.\n\nAkaun anda telah dinaik taraf ke pelan *${plan.toUpperCase()}* sah selama 30 hari.\n\nBerikut adalah resit rasmi anda untuk rekod perniagaan. Tekan /laporan untuk lihat P&L anda!`, { parse_mode: 'Markdown' });
+           await bot.telegram.sendDocument(userId, 
+             { source: receiptPath, filename: `Resit_BizBook_${plan.toUpperCase()}.pdf` },
+             { caption: '📄 Resit Pembayaran BizBook' }
+           );
+           fs.unlinkSync(receiptPath);
+         } catch(e) { 
+           console.error('Failed to send receipt to user:', e); 
+           try { fs.unlinkSync(receiptPath); } catch(err){}
+         }
+       });
      }
   }
   res.send('OK');
