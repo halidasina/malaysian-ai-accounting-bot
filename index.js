@@ -39,8 +39,13 @@ bot.start((ctx) => {
     `Saya ialah Bot Akauntan AI anda (Your AI Accounting Bot).\n\n` +
     `Status Akaun (Account Status): *${user.tier.toUpperCase()}*\n\n` +
     `Anda boleh:\n` +
-    `1. Taip perbelanjaan (Teks untuk Free Tier)\n` +
-    `2. Muat naik gambar resit (Untuk Basic/Pro Tier)\n\n` +
+    `1. Taip perbelanjaan / pendapatan\n` +
+    `2. Muat naik gambar resit (Basic/Pro Tier)\n\n` +
+    `Perintah / Menu Berguna:\n` +
+    `🧮 /laporan - Lihat Penyata P&L semasa\n` +
+    `📄 /export - Muat turun dokumen PDF rasmi\n` +
+    `🔙 /undo - Batal pendaftaran terakhir\n` +
+    `🚀 /upgrade - Naik taraf pelan akaun anda\n\n` +
     `Sila hantar rekod perbelanjaan pertama anda! (e.g. "Makan tengah hari RM15")`;
   
   ctx.reply(welcomeMsg, { parse_mode: 'Markdown' });
@@ -367,13 +372,37 @@ bot.command(['laporan', 'LAPORAN', 'Laporan'], (ctx) => {
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
-// Launch only if tokens are provided (otherwise it's just code generated for user)
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Malaysian AI Accounting Bot MVP is running!');
+});
+
+const PORT = process.env.PORT || 3000;
+
+// Launch only if tokens are provided
 if (process.env.TELEGRAM_BOT_TOKEN) {
-  bot.launch().then(() => {
-    console.log('🤖 Malaysian AI Accounting Bot MVP is running!');
-  }).catch(console.error);
+  bot.launch().catch(console.error);
 } else {
-  console.log('Bot initialized. Please set TELEGRAM_BOT_TOKEN and ANTHROPIC_API_KEY in .env file to launch.');
+  console.log('Bot initialized but missing TELEGRAM_BOT_TOKEN in .env. It will not listen to Telegram.');
 }
 
-module.exports = { bot };
+app.listen(PORT, async () => {
+  console.log(`🤖 Express Web Server listening on port ${PORT}`);
+  
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    bot.telegram.setMyCommands([
+      { command: 'start', description: 'Mula sistem BizBook' },
+      { command: 'laporan', description: 'Penyata Untung Rugi Bulanan (P&L)' },
+      { command: 'export', description: 'Cetak Laporan PDF LHDN (Pro)' },
+      { command: 'undo', description: 'Padam pendaftaran rekod terakhir' },
+      { command: 'upgrade', description: 'Pilih pelan langganan' }
+    ]).catch(console.error);
+    console.log('✅ Native Telegram commands menu synchronized.');
+  }
+
+  console.log('🤖 Malaysian AI Accounting Bot MVP is now online!');
+});
+
+module.exports = { bot, app };
