@@ -4,6 +4,7 @@ const { OpenAI } = require('openai');
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
 const path = require('path');
+const cron = require('node-cron');
 
 // Initialize Integrations
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || 'MOCK_TOKEN');
@@ -394,6 +395,45 @@ if (process.env.TELEGRAM_BOT_TOKEN) {
 
 app.listen(PORT, async () => {
   console.log(`🤖 Express Web Server listening on port ${PORT}`);
+  
+  // Automated 7-Day Nudge Cron Job (Runs every day at 10:00 AM Malaysia Time)
+  cron.schedule('0 10 * * *', async () => {
+    console.log('🤖 Running daily 10AM marketing cron check...');
+    const now = new Date();
+    Object.entries(db.users).forEach(async ([userId, userData]) => {
+      // Check if user is free tier, has been around 7 days, and hasn't been nudged yet
+      if (userData.tier === 'free' && !userData.nudged7Days && userData.setupDate) {
+        const setupDate = new Date(userData.setupDate);
+        const diffTime = Math.abs(now - Math.max(setupDate.getTime(), now.getTime() - (8 * 24 * 60 * 60 * 1000))); // Math fallback
+        const diffDays = Math.ceil((now - setupDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays >= 7) {
+          try {
+            await bot.telegram.sendMessage(userId, 
+              `🔔 *Peringatan Jemputan BizBook*\n\nHi bos! Dah seminggu anda track perbelanjaan percuma bersama saya.\n\nSedar tak yang jika anda naik taraf harini, anda terus dapat kelebihan:\n📸 *Tangkap & baca gambar resit pudar* (A.I)\n📄 *Eksport dokumen P&L PDF LHDN*\n\nTekan butang di bawah untuk buka kebolehan ini pada serendah RM15 sebulan (murah separuh gila dari hire akauntan manusia)!`,
+              {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [
+                    [Markup.button.callback('😎 Buka Akses Basic (RM15/mo)', 'plan_basic')],
+                    [Markup.button.callback('🚀 Buka Akses Pro (RM29/mo)', 'plan_pro')]
+                  ]
+                }
+              }
+            );
+            userData.nudged7Days = true;
+            saveDb();
+            console.log(`✅ Upsell sent to User ${userId}!`);
+          } catch (err) {
+            console.error(`❌ Cron Nudge failed for user ${userId}. Probably blocked bot.`, err.message);
+          }
+        }
+      }
+    });
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kuala_Lumpur"
+  });
   
   if (process.env.TELEGRAM_BOT_TOKEN) {
     bot.telegram.setMyCommands([
