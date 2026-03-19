@@ -233,7 +233,15 @@ bot.command(['export', 'EXPORT', 'Export'], async (ctx) => {
   
   if (startParam !== 'all') {
     userTx = userTx.filter(t => {
-       const d = (t.data.date || t.date).split('T')[0];
+       let d = (t.data.date || t.date).split('T')[0];
+       // Normalize date format if OpenAI returns DD-MM-YYYY
+       if (d.match(/^(\d{2})-(\d{2})-(\d{4})$/)) {
+         d = d.replace(/^(\d{2})-(\d{2})-(\d{4})$/, "$3-$2-$1");
+       }
+       // Normalize if DD/MM/YYYY
+       if (d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)) {
+         d = d.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, "$3-$2-$1");
+       }
        if (endParam) {
            return d >= startParam && d <= endParam;
        }
@@ -267,7 +275,9 @@ bot.command(['export', 'EXPORT', 'Export'], async (ctx) => {
 
   const groupByCat = (arr) => arr.reduce((acc, c) => {
     const cat = c.data.category || 'Lain-lain';
-    const amt = typeof c.data.amount === 'number' ? c.data.amount : 0;
+    let amt = 0;
+    if (typeof c.data.amount === 'number') amt = c.data.amount;
+    else if (typeof c.data.amount === 'string') amt = parseFloat(c.data.amount.replace(/[^0-9.-]+/g, "")) || 0;
     acc[cat] = (acc[cat] || 0) + amt;
     return acc;
   }, {});
@@ -327,7 +337,15 @@ bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
   
   if (startParam !== 'all') {
     userTx = userTx.filter(t => {
-       const d = (t.data.date || t.date).split('T')[0];
+       let d = (t.data.date || t.date).split('T')[0];
+       // Normalize date format if OpenAI returns DD-MM-YYYY
+       if (d.match(/^(\d{2})-(\d{2})-(\d{4})$/)) {
+         d = d.replace(/^(\d{2})-(\d{2})-(\d{4})$/, "$3-$2-$1");
+       }
+       // Normalize if DD/MM/YYYY
+       if (d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)) {
+         d = d.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, "$3-$2-$1");
+       }
        if (endParam) {
            return d >= startParam && d <= endParam;
        }
@@ -341,7 +359,9 @@ bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
   
   const groupByCat = (arr) => arr.reduce((acc, c) => {
       const cat = c.data.category || 'Lain-lain';
-      const amt = typeof c.data.amount === 'number' ? c.data.amount : 0;
+      let amt = 0;
+      if (typeof c.data.amount === 'number') amt = c.data.amount;
+      else if (typeof c.data.amount === 'string') amt = parseFloat(c.data.amount.replace(/[^0-9.-]+/g, "")) || 0;
       acc[cat] = (acc[cat] || 0) + amt;
       return acc;
   }, {});
@@ -370,7 +390,7 @@ bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
   
   msg += `---------------------------\n`;
   msg += `*${status} BERSIH: RM${Math.abs(untung).toFixed(2)}*\n\n`;
-  msg += `Tip: Taip /export untuk muat turun Penyata rasmi PDF.`;
+  msg += `Tip: Taip \`/laporan YYYY-MM-DD\` untuk tarikh spesifik (Cth: /laporan 2026-03-19)`;
   
   ctx.reply(msg, { parse_mode: 'Markdown' });
 });
