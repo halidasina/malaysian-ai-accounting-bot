@@ -419,6 +419,30 @@ app.post('/webhook/billplz', async (req, res) => {
 });
 
 
+app.get('/success', (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Pembayaran Berjaya</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 40px 20px; background-color: #f9fafb; }
+          .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          h1 { color: #10b981; margin-bottom: 10px; }
+          p { color: #4b5563; line-height: 1.5; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>✅ Pembayaran Berjaya!</h1>
+          <p>Terima kasih. Langganan anda sedang diproses dan diaktifkan.</p>
+          <p>Sila tutup halaman ini dan kembali ke <b>Telegram</b> untuk terus menyemak laporan P&L anda bersama BizBook.</p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 app.get('/', (req, res) => {
   res.send('Malaysian AI Accounting Bot MVP is running!');
 });
