@@ -95,7 +95,7 @@ bot.on('text', async (ctx, next) => {
         model: "gpt-4o-mini",
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: "You are a Malaysian AI SME Accountant. Extract details from the user's text. Determine if it is Income (Pendapatan) or Expense (Perbelanjaan). Respond with strict JSON format: {\"amount\": number, \"category\": string, \"description\": string, \"entryType\": \"income\" | \"expense\"}. If no amount is found, return 0." },
+          { role: "system", content: "You are a Malaysian AI SME Accountant processing a chat message. Extract the monetary amount and a suitable accounting category (e.g., Makan, Minyak, Jualan, Bil). ANY naked number in the text (like '10' or '15.5') is the amount in RM. Determine if it is 'income' (Pendapatan) or 'expense' (Perbelanjaan). Respond only with this exact JSON format: {\"amount\": number, \"category\": string, \"description\": string, \"entryType\": \"income\" | \"expense\"}." },
           { role: "user", content: text }
         ]
       });
@@ -107,6 +107,10 @@ bot.on('text', async (ctx, next) => {
         category: "Test Kategori",
         description: text
       };
+    }
+
+    if (!extraction.amount || extraction.amount === 0) {
+      return ctx.reply('❌ Maaf, saya tidak dapat mengesan sebarang jumlah / harga yang jelas. Sila sertakan nombor atau "RM" (Contoh: "Makan RM10" atau "Makan 10").');
     }
 
     db.transactions.push({ 
