@@ -154,8 +154,8 @@ bot.on('text', async (ctx, next) => {
         reply_markup: {
           inline_keyboard: [
             [
-              Markup.button.callback('📈 Pendapatan', `t_conf_income_${reqId}`),
-              Markup.button.callback('📉 Perbelanjaan', `t_conf_expense_${reqId}`)
+              Markup.button.callback('📈 Pendapatan (Masuk)', `t_conf_income_${reqId}`),
+              Markup.button.callback('📉 Perbelanjaan (Keluar)', `t_conf_expense_${reqId}`)
             ],
             [Markup.button.callback('❌ Batal', `t_conf_cancel_${reqId}`)]
           ]
@@ -228,8 +228,8 @@ bot.on(['photo', 'document'], async (ctx) => {
          reply_markup: {
            inline_keyboard: [
              [
-               Markup.button.callback('📈 Pendapatan', `t_conf_income_${reqId}`), 
-               Markup.button.callback('📉 Perbelanjaan', `t_conf_expense_${reqId}`)
+               Markup.button.callback('📈 Pendapatan (Masuk)', `t_conf_income_${reqId}`), 
+               Markup.button.callback('📉 Perbelanjaan (Keluar)', `t_conf_expense_${reqId}`)
              ],
              [Markup.button.callback('❌ Batal', `t_conf_cancel_${reqId}`)]
            ]
