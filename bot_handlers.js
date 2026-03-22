@@ -97,6 +97,19 @@ bot.on('text', async (ctx, next) => {
 
   const user = await dbManager.getUser(ctx.from.id);
   
+  if (user.tier === 'free') {
+    const allTx = await dbManager.getAllTransactions(ctx.from.id);
+    const now = new Date();
+    const monthCount = allTx.filter(t => {
+      const d = new Date(t.date || (t.data && t.data.date) || Date.now());
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    
+    if (monthCount >= 50) {
+      return ctx.reply('🔒 Maaf, pelan Percuma (Free) terhad kepada 50 penyertaan transaksi sebulan. Anda telah mencapai had tersebut! Sila tekan /upgrade untuk terus merekod.');
+    }
+  }
+
   // Basic Text AI extraction via logic or AI (For MVP we use AI for text too)
   ctx.reply('⏳ Sekejap bos, tengah kira-kira ni...');
   
