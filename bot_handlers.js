@@ -39,15 +39,21 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
   const user = await dbManager.getUser(ctx.from.id);
   const expiryStr = user.plan_expiry ? ` (Tamat Tempoh: ${new Date(user.plan_expiry).toLocaleDateString('ms-MY')})` : '';
 
-  const basicText = user.setup_fee_paid ? 'Basic - Data & Resit Tanpa Had (RM15/bln)' : 'Basic - Data & Resit Tanpa Had (RM45 Sekali Bayar + RM15/bln)';
-  const proText = user.setup_fee_paid ? 'Pro - Eksport PDF/Excel Rasmi (RM20/bln)' : 'Pro - Eksport PDF/Excel Rasmi (RM99 Sekali Bayar + RM20/bln)';
+  const basicPrice = user.setup_fee_paid ? 'RM15/bln' : 'RM45 Pendaftaran + RM15/bln';
+  const proPrice = user.setup_fee_paid ? 'RM20/bln' : 'RM99 Pendaftaran + RM20/bln';
 
   ctx.reply(
-    `🚀 *Naik Taraf (Upgrade)*\n\nPelan Semasa Anda: *${user.tier.toUpperCase()}*${expiryStr}\n\nPilih pelan yang sesuai untuk perniagaan anda (Choose a plan):`,
+    `🚀 *Naik Taraf (Upgrade)*\n\n` +
+    `Pelan Semasa Anda: *${user.tier.toUpperCase()}*${expiryStr}\n\n` +
+    `*Senarai Pelan:*\n` +
+    `🔹 *Free (RM0)*\n   - Teks manual sahaja\n` +
+    `🔹 *Basic (${basicPrice})*\n   - Data Teks & Resit Bergambar Tanpa Had\n` +
+    `🔹 *Pro (${proPrice})*\n   - Akses Penuh: Eksport PDF & Excel Rasmi\n\n` +
+    `Sila pilih dan langgan pelan dengan butang di bawah:`,
     Markup.inlineKeyboard([
-      [Markup.button.callback('Free (RM0)', 'plan_free')],
-      [Markup.button.callback(basicText, 'plan_basic')],
-      [Markup.button.callback(proText, 'plan_pro')]
+      [Markup.button.callback('Kekal Pelan Free', 'plan_free')],
+      [Markup.button.callback('Langgan Pelan Basic', 'plan_basic')],
+      [Markup.button.callback('Langgan Pelan Pro', 'plan_pro')]
     ])
   );
 });
