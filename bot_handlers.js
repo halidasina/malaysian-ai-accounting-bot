@@ -39,12 +39,15 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
   const user = await dbManager.getUser(ctx.from.id);
   const expiryStr = user.plan_expiry ? ` (Tamat Tempoh: ${new Date(user.plan_expiry).toLocaleDateString('ms-MY')})` : '';
 
+  const basicText = user.setup_fee_paid ? 'Basic - Resit Upload (RM15/mo)' : 'Basic - Resit Upload (RM45 One-time + RM15/mo)';
+  const proText = user.setup_fee_paid ? 'Pro - Unlimited (RM20/mo)' : 'Pro - Unlimited (RM99 One-time + RM20/mo)';
+
   ctx.reply(
     `🚀 *Naik Taraf (Upgrade)*\n\nPelan Semasa Anda: *${user.tier.toUpperCase()}*${expiryStr}\n\nPilih pelan yang sesuai untuk perniagaan anda (Choose a plan):`,
     Markup.inlineKeyboard([
       [Markup.button.callback('Free (RM0)', 'plan_free')],
-      [Markup.button.callback('Basic - Resit Upload (RM45 One-time + RM15/mo)', 'plan_basic')],
-      [Markup.button.callback('Pro - Unlimited (RM99 One-time + RM20/mo)', 'plan_pro')]
+      [Markup.button.callback(basicText, 'plan_basic')],
+      [Markup.button.callback(proText, 'plan_pro')]
     ])
   );
 });
