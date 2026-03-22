@@ -69,14 +69,17 @@ bot.action(/plan_(.+)/, async (ctx) => {
     return ctx.reply(`✅ Akaun anda telah ditukar ke pelan *FREE*!`);
   }
 
-  const paymentLink = await createBillplzBill(ctx.from.id, plan);
+  const user = await dbManager.getUser(ctx.from.id);
+  const paymentLink = await createBillplzBill(ctx.from.id, plan, user.setup_fee_paid);
   if (paymentLink) {
-    ctx.reply(`✅ Sila buat pembayaran pelan *${plan.toUpperCase()}* di pautan selamat rasmi ini:\n\n${paymentLink}`);
+    const expectedCost = user.setup_fee_paid ? (plan === 'basic' ? 'RM15' : 'RM20') : (plan === 'basic' ? 'RM60' : 'RM119');
+    ctx.reply(`✅ Sila buat pembayaran pelan *${plan.toUpperCase()}* (${expectedCost}) di pautan selamat rasmi ini:\n\n${paymentLink}`);
   } else {
     ctx.reply(`⚠️ [MOCK] Talian Billplz tak dijumpai. Akaun *${plan.toUpperCase()}* berjaya dinaik taraf (30 Hari)!`);
     await dbManager.saveUser(ctx.from.id, { 
       tier: plan, 
-      plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      setup_fee_paid: true
     });
   }
 });

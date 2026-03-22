@@ -11,11 +11,11 @@ module.exports = function(bot, dbManager) {
   app.use(express.urlencoded({ extended: true }));
 
   app.post('/webhook/billplz', async (req, res) => {
-    const { paid, state, reference_1 } = req.body;
+    const { paid, state, reference_1, amount } = req.body;
     if (paid === 'true' || state === 'paid' || paid === true) {
        const [userId, plan] = (reference_1 || '').split('_');
        if (userId && plan) {
-         await dbManager.saveUser(userId, { tier: plan, plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() });
+         await dbManager.saveUser(userId, { tier: plan, plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), setup_fee_paid: true });
          
          // Generate PDF Receipt
          const doc = new PDFDocument();
@@ -23,8 +23,9 @@ module.exports = function(bot, dbManager) {
          const stream = fs.createWriteStream(receiptPath);
          doc.pipe(stream);
          
-         const amountStr = plan === 'basic' ? 'RM 60.00' : 'RM 119.00';
-         const planDesc = plan === 'basic' ? 'Basic (RM45 Setup + RM15/mo)' : 'Pro (RM99 Setup + RM20/mo)';
+         const paidAmount = amount ? (parseInt(amount) / 100) : (plan === 'basic' ? 60 : 119);
+         const amountStr = `RM ${paidAmount.toFixed(2)}`;
+         const planDesc = paidAmount > 30 ? (plan === 'basic' ? 'Basic (RM45 Setup + RM15/mo)' : 'Pro (RM99 Setup + RM20/mo)') : (plan === 'basic' ? 'Basic (RM15 Renewal)' : 'Pro (RM20 Renewal)');
          
          doc.fontSize(20).font('Helvetica-Bold').text('BIZBOOK - RESIT PEMBAYARAN', { align: 'center' });
          doc.moveDown();
