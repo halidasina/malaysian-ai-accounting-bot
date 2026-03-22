@@ -39,8 +39,8 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
   const user = await dbManager.getUser(ctx.from.id);
   const expiryStr = user.plan_expiry ? ` (Tamat Tempoh: ${new Date(user.plan_expiry).toLocaleDateString('ms-MY')})` : '';
 
-  const basicText = user.setup_fee_paid ? 'Basic - Resit Upload (RM15/mo)' : 'Basic - Resit Upload (RM45 One-time + RM15/mo)';
-  const proText = user.setup_fee_paid ? 'Pro - Unlimited (RM20/mo)' : 'Pro - Unlimited (RM99 One-time + RM20/mo)';
+  const basicText = user.setup_fee_paid ? 'Basic - Data & Resit Tanpa Had (RM15/bln)' : 'Basic - Data & Resit Tanpa Had (RM45 Sekali Bayar + RM15/bln)';
+  const proText = user.setup_fee_paid ? 'Pro - Eksport PDF/Excel Rasmi (RM20/bln)' : 'Pro - Eksport PDF/Excel Rasmi (RM99 Sekali Bayar + RM20/bln)';
 
   ctx.reply(
     `🚀 *Naik Taraf (Upgrade)*\n\nPelan Semasa Anda: *${user.tier.toUpperCase()}*${expiryStr}\n\nPilih pelan yang sesuai untuk perniagaan anda (Choose a plan):`,
