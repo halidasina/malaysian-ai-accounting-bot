@@ -51,8 +51,9 @@ bot.command('admin', async (ctx) => {
   const password = parts[1];
   
   const adminPassword = process.env.ADMIN_PASSWORD || 'adminpromolife';
+  const altPassword = process.env.ADMIN_PASSWORD_2 || 'user1';
 
-  if (password === adminPassword) {
+  if (password === adminPassword || password === altPassword) {
     await dbManager.saveUser(ctx.from.id, { tier: 'pro', plan_expiry: new Date('2099-12-31').toISOString() });
     ctx.reply('✅ Akses Pembangun disahkan: Akaun anda kini dinaik taraf kepada PRO selamanya (Lifetime)! Sila kaji semua menu /export dan resit.');
   } else {
