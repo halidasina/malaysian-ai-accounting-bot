@@ -74,6 +74,23 @@ bot.command('admin', async (ctx) => {
   }
 });
 
+bot.command('demote', async (ctx) => {
+  const parts = ctx.message.text.split(' ');
+  const password = parts[1];
+  const targetId = parts[2];
+  
+  const adminPassword = process.env.ADMIN_PASSWORD || 'adminpromolife';
+  const altPassword = process.env.ADMIN_PASSWORD_2 || 'user1';
+
+  if (password === adminPassword || password === altPassword) {
+    if (!targetId) return ctx.reply('⚠️ Sila sertakan ID pelanggan. Format yang betul: /demote <kata_laluan> <ID_Pelanggan>');
+    await dbManager.saveUser(targetId, { tier: 'free', plan_expiry: null, setup_fee_paid: false });
+    ctx.reply(`✅ Berjaya! Akaun pelanggan ID ${targetId} telah diturunkan taraf semula ke pelan FREE.`);
+  } else {
+    ctx.reply('❌ Akses ditolak. Kata laluan salah.');
+  }
+});
+
 bot.action(/plan_(.+)/, async (ctx) => {
   const plan = ctx.match[1];
   ctx.answerCbQuery();
