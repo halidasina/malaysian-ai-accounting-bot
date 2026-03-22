@@ -15,7 +15,7 @@ bot.command(['export', 'EXPORT', 'Export'], async (ctx) => {
 
   // Parse arguments for duration/range filtering. e.g. /export 2026-03-01 2026-03-15
   const args = ctx.message.text.split(' ');
-  const startParam = args[1] || new Date().toISOString().substring(0, 7); 
+  const startParam = args[1] || 'all'; 
   const endParam = args[2] || null;
 
   ctx.reply(
@@ -63,8 +63,7 @@ bot.action(/export_(pdf|excel)_(.+)_(.+)/, async (ctx) => {
   const expenses = userTx.filter(t => t.data.entryType !== 'income');
 
   const groupByCat = (arr) => arr.reduce((acc, c) => {
-    const dStr = (c.data.date || c.date || '').split('T')[0];
-    const cat = `[${dStr}] ${c.data.description || c.data.merchant || c.data.category || 'Lain-lain'}`;
+    const cat = c.data.description || c.data.merchant || c.data.category || 'Lain-lain';
     let amt = 0;
     if (typeof c.data.amount === 'number') amt = c.data.amount;
     else if (typeof c.data.amount === 'string') amt = parseFloat(c.data.amount.replace(/[^0-9.-]+/g, "")) || 0;
@@ -208,7 +207,7 @@ bot.action(/export_(pdf|excel)_(.+)_(.+)/, async (ctx) => {
 // Report command 
 bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
   const args = ctx.message.text.split(' ');
-  const startParam = args[1] || new Date().toISOString().substring(0, 7);
+  const startParam = args[1] || 'all';
   const endParam = args[2] || null;
 
   let userTx = await dbManager.getAllTransactions(ctx.from.id);
@@ -236,8 +235,7 @@ bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
   const expenses = userTx.filter(t => t.data.entryType !== 'income');
   
   const groupByCat = (arr) => arr.reduce((acc, c) => {
-      const dStr = (c.data.date || c.date || '').split('T')[0];
-      const cat = `[${dStr}] ${c.data.description || c.data.merchant || c.data.category || 'Lain-lain'}`;
+      const cat = c.data.description || c.data.merchant || c.data.category || 'Lain-lain';
       let amt = 0;
       if (typeof c.data.amount === 'number') amt = c.data.amount;
       else if (typeof c.data.amount === 'string') amt = parseFloat(c.data.amount.replace(/[^0-9.-]+/g, "")) || 0;
