@@ -260,8 +260,10 @@ bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
 
   let totalIn = 0, totalEx = 0;
   
+  const user = await dbManager.getUser(ctx.from.id);
   const monthDisplay = startParam === 'all' ? 'Sepanjang Masa' : durationText;
   let msg = `📊 *PENYATA UNTUNG RUGI (P&L)*\n`;
+  msg += `Pelan Semasa: *${user.tier.toUpperCase()}*\n`;
   msg += `Julat Tarikh: ${monthDisplay}\n\n`;
   
   msg += `*PENDAPATAN*\n`;

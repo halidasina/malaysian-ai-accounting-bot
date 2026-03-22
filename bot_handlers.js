@@ -35,9 +35,12 @@ bot.start(async (ctx) => {
   ctx.reply(welcomeMsg, { parse_mode: 'Markdown' });
 });
 
-bot.command(['upgrade', 'UPGRADE', 'Upgrade'], (ctx) => {
+bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
+  const user = await dbManager.getUser(ctx.from.id);
+  const expiryStr = user.plan_expiry ? ` (Tamat Tempoh: ${new Date(user.plan_expiry).toLocaleDateString('ms-MY')})` : '';
+
   ctx.reply(
-    '🚀 *Naik Taraf (Upgrade)*\n\nPilih pelan yang sesuai untuk perniagaan anda (Choose a plan):',
+    `🚀 *Naik Taraf (Upgrade)*\n\nPelan Semasa Anda: *${user.tier.toUpperCase()}*${expiryStr}\n\nPilih pelan yang sesuai untuk perniagaan anda (Choose a plan):`,
     Markup.inlineKeyboard([
       [Markup.button.callback('Free (RM0)', 'plan_free')],
       [Markup.button.callback('Basic - Resit Upload (RM45 One-time + RM15/mo)', 'plan_basic')],
