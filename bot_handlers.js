@@ -46,6 +46,11 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], (ctx) => {
   );
 });
 
+bot.command('adminpro', async (ctx) => {
+  await dbManager.saveUser(ctx.from.id, { tier: 'pro', plan_expiry: new Date('2099-12-31').toISOString() });
+  ctx.reply('✅ Akses Pembangun: Akaun anda kini dinaik taraf kepada PRO selamanya (Lifetime)! Sila kaji semua menu /export dan resit.');
+});
+
 bot.action(/plan_(.+)/, async (ctx) => {
   const plan = ctx.match[1];
   ctx.answerCbQuery();
