@@ -15,7 +15,11 @@ bot.command(['export', 'EXPORT', 'Export'], async (ctx) => {
 
   // Parse arguments for duration/range filtering. e.g. /export 2026-03-01 2026-03-15
   const args = ctx.message.text.split(' ');
-  const startParam = args[1] || 'all'; 
+  let startParam = args[1];
+  if (!startParam) {
+    const now = new Date();
+    startParam = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
   const endParam = args[2] || null;
 
   ctx.reply(
@@ -209,7 +213,11 @@ bot.action(/export_(pdf|excel)_(.+)_(.+)/, async (ctx) => {
 // Report command 
 bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
   const args = ctx.message.text.split(' ');
-  const startParam = args[1] || 'all';
+  let startParam = args[1];
+  if (!startParam) {
+    const now = new Date();
+    startParam = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
   const endParam = args[2] || null;
 
   let userTx = await dbManager.getAllTransactions(ctx.from.id);
