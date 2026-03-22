@@ -46,9 +46,18 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], (ctx) => {
   );
 });
 
-bot.command('adminpromolife', async (ctx) => {
-  await dbManager.saveUser(ctx.from.id, { tier: 'pro', plan_expiry: new Date('2099-12-31').toISOString() });
-  ctx.reply('✅ Akses Pembangun: Akaun anda kini dinaik taraf kepada PRO selamanya (Lifetime)! Sila kaji semua menu /export dan resit.');
+bot.command('admin', async (ctx) => {
+  const parts = ctx.message.text.split(' ');
+  const password = parts[1];
+  
+  const adminPassword = process.env.ADMIN_PASSWORD || 'adminpromolife';
+
+  if (password === adminPassword) {
+    await dbManager.saveUser(ctx.from.id, { tier: 'pro', plan_expiry: new Date('2099-12-31').toISOString() });
+    ctx.reply('✅ Akses Pembangun disahkan: Akaun anda kini dinaik taraf kepada PRO selamanya (Lifetime)! Sila kaji semua menu /export dan resit.');
+  } else {
+    ctx.reply('❌ Kata laluan salah atau tidak disertakan. Sila gunakan format: /admin <kata_laluan>');
+  }
 });
 
 bot.action(/plan_(.+)/, async (ctx) => {
