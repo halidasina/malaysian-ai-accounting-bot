@@ -51,6 +51,7 @@ app.listen(PORT, async () => {
     bot.telegram.setMyCommands([
       { command: 'start', description: 'Mula sistem BizBook' },
       { command: 'laporan', description: 'Penyata Untung Rugi Bulanan (P&L)' },
+      { command: 'laporan_all', description: 'Penyata Keseluruhan Masa' },
       { command: 'export', description: 'Cetak Laporan PDF (Pro)' },
       { command: 'undo', description: 'Padam pendaftaran rekod terakhir' },
       { command: 'upgrade', description: 'Pilih pelan langganan' }

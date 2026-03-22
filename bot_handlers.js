@@ -27,6 +27,7 @@ bot.start(async (ctx) => {
     `2. Muat naik gambar resit (Basic/Pro Tier)\n\n` +
     `Perintah / Menu Berguna:\n` +
     `🧮 /laporan - Lihat Penyata P&L semasa\n` +
+    `📊 /laporan all - Lihat Penyata P&L keseluruhan\n` +
     `📄 /export - Muat turun dokumen PDF rasmi\n` +
     `🔙 /undo - Batal pendaftaran terakhir\n` +
     `🚀 /upgrade - Naik taraf pelan akaun anda\n\n` +
@@ -117,8 +118,8 @@ bot.on('text', async (ctx, next) => {
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
     
-    if (monthCount >= 50) {
-      return ctx.reply('🔒 Maaf, pelan Percuma (Free) terhad kepada 50 penyertaan transaksi sebulan. Anda telah mencapai had tersebut! Sila tekan /upgrade untuk terus merekod.');
+    if (monthCount >= 10) {
+      return ctx.reply('🔒 Maaf, pelan Percuma (Free) terhad kepada 10 penyertaan transaksi sebulan. Anda telah mencapai had tersebut! Sila tekan /upgrade untuk terus merekod.');
     }
   }
 
@@ -153,12 +154,14 @@ bot.on('text', async (ctx, next) => {
     }
 
     const reqId = Date.now().toString() + Math.random().toString(36).substring(2, 6);
-    pendingTransactions.set(reqId, { userId: ctx.from.id, type: 'text', data: extraction, date: new Date().toISOString() });
+    const currDate = new Date().toISOString();
+    pendingTransactions.set(reqId, { userId: ctx.from.id, type: 'text', data: extraction, date: currDate });
     
     ctx.reply(
       `🧐 *Sila Sahkan Transaksi*\n\n` +
       `Kategori: ${extraction.category}\n` +
       `Jumlah: RM${extraction.amount}\n` +
+      `Tarikh: ${currDate.split('T')[0]}\n` +
       `Nota: ${extraction.description || '-'}\n\n` +
       `Adakah ini Duit Masuk atau Duit Keluar?`,
       {
@@ -272,16 +275,20 @@ bot.action(/t_conf_(income|expense|cancel)_(.+)/, async (ctx) => {
 
   // Override entrytype user strictly
   pending.data.entryType = action;
-  pending.data.category = action === 'income' ? 'Pendapatan' : 'Perbelanjaan';
+  if (!pending.data.category || pending.data.category === 'Pendapatan' || pending.data.category === 'Perbelanjaan') {
+    pending.data.category = action === 'income' ? 'Pendapatan' : 'Perbelanjaan';
+  }
 
   await dbManager.addTransaction(pending);
   pendingTransactions.delete(reqId);
 
   const hType = action === 'income' ? 'Pendapatan' : 'Perbelanjaan';
+  const dDate = pending.data.date || pending.date.split('T')[0];
   ctx.editMessageText(
       `✅ *Rekod ${hType} Disahkan & Disimpan!*\n\n` +
       `Kategori: ${pending.data.category}\n` +
       `Jumlah: RM${pending.data.amount}\n` +
+      `Tarikh: ${dDate}\n` +
       `Peniaga/Nota: ${pending.data.merchant || pending.data.description || '-'}`,
       { parse_mode: 'Markdown' }
   );

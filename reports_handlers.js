@@ -130,11 +130,17 @@ bot.action(/export_(pdf|excel)_(.+)_(.+)/, async (ctx) => {
     doc.end();
 
     stream.on('finish', async () => {
-      await ctx.replyWithDocument(
-        { source: filePath, filename: 'Penyata_Untung_Rugi_BizBook.pdf' },
-        { caption: '📄 Penyata Untung Rugi anda sudah sedia untuk rujukan Akauntan!' }
-      );
-      fs.unlinkSync(filePath); // cleanup
+      try {
+        await ctx.replyWithDocument(
+          { source: filePath, filename: 'Penyata_Untung_Rugi_BizBook.pdf' },
+          { caption: '📄 Penyata Untung Rugi anda sudah sedia untuk rujukan Akauntan!' }
+        );
+      } catch (err) {
+        console.error('❌ Ralat hantar PDF:', err.message);
+        ctx.reply('⚠️ Maaf, fail PDF gagal dihantar. Sila cuba lagi.');
+      } finally {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath); // cleanup
+      }
     });
   } else if (format === 'excel') {
     ctx.reply('⏳ Sedang menjana Laporan Excel Profesional anda...');
@@ -202,19 +208,28 @@ bot.action(/export_(pdf|excel)_(.+)_(.+)/, async (ctx) => {
     const filePath = path.join(__dirname, `Laporan_${ctx.from.id}.xlsx`);
     await workbook.xlsx.writeFile(filePath);
     
-    await ctx.replyWithDocument(
-      { source: filePath, filename: 'Penyata_Untung_Rugi_BizBook.xlsx' },
-      { caption: '📗 Laporan Excel anda sudah sedia!' }
-    );
-    fs.unlinkSync(filePath);
+    try {
+      await ctx.replyWithDocument(
+        { source: filePath, filename: 'Penyata_Untung_Rugi_BizBook.xlsx' },
+        { caption: '📗 Laporan Excel anda sudah sedia!' }
+      );
+    } catch (err) {
+      console.error('❌ Ralat hantar Excel:', err.message);
+      ctx.reply('⚠️ Maaf, fail Excel gagal dihantar. Sila cuba lagi.');
+    } finally {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
   }
 });
 
 // Report command 
-bot.command(['laporan', 'LAPORAN', 'Laporan'], async (ctx) => {
+bot.command(['laporan', 'LAPORAN', 'Laporan', 'laporan_all', 'LAPORAN_ALL'], async (ctx) => {
   const args = ctx.message.text.split(' ');
   let startParam = args[1];
-  if (!startParam) {
+  
+  if (ctx.message.text.toLowerCase().includes('laporan_all')) {
+    startParam = 'all';
+  } else if (!startParam) {
     const now = new Date();
     startParam = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   }
