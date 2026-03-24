@@ -54,7 +54,8 @@ app.listen(PORT, async () => {
       { command: 'laporan_all', description: 'Penyata Keseluruhan Masa' },
       { command: 'export', description: 'Cetak Laporan PDF (Pro)' },
       { command: 'undo', description: 'Padam pendaftaran rekod terakhir' },
-      { command: 'upgrade', description: 'Pilih pelan langganan' }
+      { command: 'upgrade', description: 'Pilih pelan langganan' },
+      { command: 'help', description: 'Bantuan & Hubungi Admin' }
     ]).catch(console.error);
     console.log('✅ Native Telegram commands menu synchronized.');
   }

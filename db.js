@@ -48,6 +48,13 @@ class SupabaseDB {
     const { data } = await supabase.from('users').select('*');
     return data || [];
   }
+  async isCodeUsed(code) {
+    const { data } = await supabase.from('transactions').select('*').eq('type', 'one_time_code');
+    return (data || []).some(t => t.data && t.data.code === code);
+  }
+  async markCodeUsed(code, userId) {
+    await supabase.from('transactions').insert({ user_id: String(userId), type: 'one_time_code', data: { code }, date: new Date().toISOString() });
+  }
 }
 
 class LocalDB {
@@ -96,6 +103,13 @@ class LocalDB {
   }
   async getAllUsers() {
     return Object.values(this.db.users);
+  }
+  async isCodeUsed(code) {
+    return this.db.transactions.some(t => t.type === 'one_time_code' && t.data && t.data.code === code);
+  }
+  async markCodeUsed(code, userId) {
+    this.db.transactions.push({ id: Date.now().toString(), user_id: String(userId), type: 'one_time_code', data: { code }, date: new Date().toISOString() });
+    this.saveDb();
   }
 }
 

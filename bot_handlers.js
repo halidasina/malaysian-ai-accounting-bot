@@ -30,10 +30,17 @@ bot.start(async (ctx) => {
     `📊 /laporan all - Lihat Penyata P&L keseluruhan\n` +
     `📄 /export - Muat turun dokumen PDF rasmi\n` +
     `🔙 /undo - Batal pendaftaran terakhir\n` +
-    `🚀 /upgrade - Naik taraf pelan akaun anda\n\n` +
+    `🚀 /upgrade - Naik taraf pelan akaun anda\n` +
+    `🆘 /help - Bantuan & Hubungi Pembangun\n\n` +
     `Sila hantar rekod perbelanjaan pertama anda! (e.g. "Makan tengah hari RM15")`;
-  
-  ctx.reply(welcomeMsg, { parse_mode: 'Markdown' });
+  const adminContact = process.env.ADMIN_TELEGRAM || 'SILA_TUKAR_USERNAME_SINI';
+  const cleanContact = adminContact.replace(/\s+/g, '').replace('@', '');
+  ctx.reply(welcomeMsg, { 
+    parse_mode: 'Markdown',
+    ...Markup.inlineKeyboard([
+      [Markup.button.url('💬 Hubungi / Mesej Admin', `https://t.me/${cleanContact}`)]
+    ])
+  });
 });
 
 bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
@@ -59,6 +66,22 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
   );
 });
 
+bot.command(['help', 'bantuan', 'sokongan'], (ctx) => {
+  const adminContact = process.env.ADMIN_TELEGRAM || 'SILA_TUKAR_USERNAME_SINI';
+  const cleanContact = adminContact.replace(/\s+/g, '').replace('@', '');
+  
+  ctx.reply(
+    `🆘 *Pusat Bantuan BizBook*\n\n` +
+    `Jika anda menghadapi sebarang kesulitan, memerlukan bantuan atau mempunyai pertanyaan, sila hubungi saya (Admin) terus di Telegram.\n`,
+    {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.url('💬 Hubungi / Mesej Admin', `https://t.me/${cleanContact}`)]
+      ])
+    }
+  );
+});
+
 bot.command('admin', async (ctx) => {
   const parts = ctx.message.text.split(' ');
   const password = parts[1];
@@ -69,6 +92,19 @@ bot.command('admin', async (ctx) => {
   if (password === adminPassword || password === altPassword) {
     await dbManager.saveUser(ctx.from.id, { tier: 'pro', plan_expiry: new Date('2099-12-31').toISOString() });
     ctx.reply('✅ Akses Pembangun disahkan: Akaun anda kini dinaik taraf kepada PRO selamanya (Lifetime)! Sila kaji semua menu /export dan resit.');
+  } else if (password === 'adik' || password === 'nisa') {
+    try {
+      const isUsed = await dbManager.isCodeUsed(password);
+      if (isUsed) {
+        return await ctx.reply('❌ Maaf, kata laluan ini hanya boleh ditebus sekali sahaja dan ia telah pun digunakan.');
+      }
+      await dbManager.markCodeUsed(password, ctx.from.id);
+      await dbManager.saveUser(ctx.from.id, { tier: 'pro', plan_expiry: new Date('2099-12-31').toISOString() });
+      await ctx.reply('✅ Akses Pembangun disahkan: Akaun anda kini dinaik taraf kepada PRO selamanya (Lifetime)! Sila kaji semua menu /export dan resit.');
+    } catch (err) {
+      console.error('Crash averted during /admin adik check:', err);
+      ctx.reply('⚠️ Ralat sistem semasa mengesahkan kod ini. Sila hubungi admin.').catch(() => {});
+    }
   } else {
     ctx.reply('❌ Kata laluan salah atau tidak disertakan. Sila gunakan format: /admin <kata_laluan>');
   }
