@@ -10,10 +10,11 @@ module.exports = function(bot, dbManager) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.post('/webhook/billplz', async (req, res) => {
-    const { paid, state, reference_1, amount } = req.body;
+  app.post('/webhook/billplz/:userId/:plan', async (req, res) => {
+    const { paid, state, amount } = req.body;
+    const { userId, plan } = req.params;
+    
     if (paid === 'true' || state === 'paid' || paid === true) {
-       const [userId, plan] = (reference_1 || '').split('_');
        if (userId && plan) {
          try {
            await dbManager.saveUser(userId, { tier: plan, plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), setup_fee_paid: true });

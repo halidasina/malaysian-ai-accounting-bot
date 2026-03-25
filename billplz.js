@@ -24,10 +24,10 @@ async function createBillplzBill(userId, plan, setupFeePaid = false) {
         email: 'billing@bizbook.ai', // Default fallback email since TG doesnt always provide it
         name: plan.toUpperCase() + ' Sub: User ' + userId,
         amount: price,
-        callback_url: (process.env.WEBHOOK_URL || 'https://localhost') + '/webhook/billplz',
+        callback_url: (process.env.WEBHOOK_URL || 'https://localhost') + `/webhook/billplz/${userId}/${plan}`,
         redirect_url: process.env.WEBHOOK_URL ? (process.env.WEBHOOK_URL + '/success') : '',
         reference_1_label: 'UserId_Plan',
-        reference_1: `${userId}_${plan}` // Used in webhook to match user
+        reference_1: `${userId}_${plan}` // Just for dashboard logging now
      }, {
         headers: {
            'Authorization': `Basic ${credentials}`,
