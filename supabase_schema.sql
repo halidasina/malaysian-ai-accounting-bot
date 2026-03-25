@@ -6,7 +6,8 @@ CREATE TABLE users (
   tier TEXT DEFAULT 'free',
   plan_expiry TIMESTAMP WITH TIME ZONE,
   setup_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  nudged_7_days BOOLEAN DEFAULT false
+  nudged_7_days BOOLEAN DEFAULT false,
+  setup_fee_paid BOOLEAN DEFAULT false
 );
 
 -- Transactions Table
