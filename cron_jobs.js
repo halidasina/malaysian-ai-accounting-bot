@@ -41,4 +41,42 @@ module.exports = function(bot, dbManager) {
     scheduled: true,
     timezone: "Asia/Kuala_Lumpur"
   });
+  // Automated 30-Day Expiry Check (Runs every day at 9:00 AM Malaysia Time)
+  cron.schedule('0 9 * * *', async () => {
+    console.log('🤖 Running daily 9AM expiration check...');
+    const now = new Date();
+    const allUsers = await dbManager.getAllUsers();
+    
+    for (const userData of allUsers) {
+      if (userData.tier !== 'free' && userData.plan_expiry) {
+        if (new Date(userData.plan_expiry) < now) {
+          const userId = userData.id || userData.user_id;
+          if (!userId) continue;
+          
+          await dbManager.saveUser(userId, { tier: 'free', plan_expiry: null });
+          try {
+            await bot.telegram.sendMessage(userId, 
+              `⚠️ *Langganan Tamat!*\n\nPelan BizBook ${userData.tier.toUpperCase()} anda selama 30 hari telahpun tamat tempoh harini. Akaun anda kini kembali ke pelan *Percuma (Had 20 Rekod)*.\n\nSila perbaharui langganan di bawah sekarang (tanpa sebarang bayaran pendaftaran, hanya yuran bulanan)!`,
+              {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [
+                    [Markup.button.callback('Kekal Pelan Free', 'plan_free')],
+                    [Markup.button.callback('Perbaharui Basic (RM15/bln)', 'plan_basic')],
+                    [Markup.button.callback('Perbaharui Pro (RM20/bln)', 'plan_pro')]
+                  ]
+                }
+              }
+            );
+            console.log(`✅ Expiration sent to User ${userId}!`);
+          } catch(e) {
+            console.error(`❌ Expiration notification failed for user ${userId}.`, e.message);
+          }
+        }
+      }
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kuala_Lumpur"
+  });
 };
