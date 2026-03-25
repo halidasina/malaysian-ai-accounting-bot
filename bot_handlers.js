@@ -48,7 +48,7 @@ bot.command(['upgrade', 'UPGRADE', 'Upgrade'], async (ctx) => {
   const expiryStr = user.plan_expiry ? ` (Tamat Tempoh: ${new Date(user.plan_expiry).toLocaleDateString('ms-MY')})` : '';
 
   const basicPrice = user.setup_fee_paid ? 'RM15/bln' : 'RM45 Pendaftaran + RM15/bln';
-  const proPrice = user.setup_fee_paid ? 'RM20/bln' : 'RM99 Pendaftaran + RM20/bln';
+  const proPrice = user.tier === 'basic' ? 'RM54 (Naik Taraf Tiers)' : (user.setup_fee_paid ? 'RM20/bln' : 'RM99 Pendaftaran + RM20/bln');
 
   ctx.reply(
     `🚀 *Naik Taraf (Upgrade)*\n\n` +
@@ -137,9 +137,12 @@ bot.action(/plan_(.+)/, async (ctx) => {
   }
 
   const user = await dbManager.getUser(ctx.from.id);
-  const paymentLink = await createBillplzBill(ctx.from.id, plan, user.setup_fee_paid);
+  const paymentLink = await createBillplzBill(ctx.from.id, plan, user.tier, user.setup_fee_paid);
   if (paymentLink) {
-    const expectedCost = user.setup_fee_paid ? (plan === 'basic' ? 'RM15' : 'RM20') : (plan === 'basic' ? 'RM60' : 'RM119');
+    let expectedCost = '';
+    if (plan === 'pro' && user.tier === 'basic') expectedCost = 'RM54';
+    else expectedCost = user.setup_fee_paid ? (plan === 'basic' ? 'RM15' : 'RM20') : (plan === 'basic' ? 'RM60' : 'RM119');
+    
     ctx.reply(`✅ Sila buat pembayaran pelan *${plan.toUpperCase()}* (${expectedCost}) di pautan selamat rasmi ini:\n\n${paymentLink}`);
   } else {
     ctx.reply(`⚠️ [MOCK] Talian Billplz tak dijumpai. Akaun *${plan.toUpperCase()}* berjaya dinaik taraf (30 Hari)!`);

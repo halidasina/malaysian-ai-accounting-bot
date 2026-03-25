@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function createBillplzBill(userId, plan, setupFeePaid = false) {
+async function createBillplzBill(userId, plan, currentTier = 'free', setupFeePaid = false) {
   if (!process.env.BILLPLZ_API_KEY || !process.env.BILLPLZ_COLLECTION_ID) {
     console.log('Billplz keys are not set. Returning null for mock upgrade.');
     return null;
@@ -11,8 +11,13 @@ async function createBillplzBill(userId, plan, setupFeePaid = false) {
     price = setupFeePaid ? 1500 : 6000;
     desc = setupFeePaid ? 'BizBook Basic Renewal (RM15 Monthly)' : 'BizBook Basic (RM45 Setup + RM15 Month 1)';
   } else {
-    price = setupFeePaid ? 2000 : 11900;
-    desc = setupFeePaid ? 'BizBook Pro Renewal (RM20 Monthly)' : 'BizBook Pro (RM99 Setup + RM20 Month 1)';
+    if (currentTier === 'basic') {
+      price = 5400;
+      desc = 'BizBook Upgrade Basic to Pro (RM54)';
+    } else {
+      price = setupFeePaid ? 2000 : 11900;
+      desc = setupFeePaid ? 'BizBook Pro Renewal (RM20 Monthly)' : 'BizBook Pro (RM99 Setup + RM20 Month 1)';
+    }
   }
 
   try {
