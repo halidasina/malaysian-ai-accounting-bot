@@ -171,8 +171,8 @@ bot.on('text', async (ctx, next) => {
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
     
-    if (monthCount >= 10) {
-      return ctx.reply('🔒 Maaf, pelan Percuma (Free) terhad kepada 10 penyertaan transaksi sebulan. Anda telah mencapai had tersebut! Sila tekan /upgrade untuk terus merekod.');
+    if (monthCount >= 20) {
+      return ctx.reply('🔒 Maaf, pelan Percuma (Free) terhad kepada 20 penyertaan transaksi sebulan. Anda telah mencapai had tersebut! Sila tekan /upgrade untuk terus merekod.');
     }
   }
 
